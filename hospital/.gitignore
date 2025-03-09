@@ -15,10 +15,6 @@ app/tests/
 .idea/
 *.swp
 
-# Ignore Docker-related files
-Dockerfile
-docker-compose.yml
-
 # Ignore Python virtual environments
 venv/
 .env/
