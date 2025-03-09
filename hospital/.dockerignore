@@ -1,0 +1,20 @@
+# .dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.db
+*.sqlite3
+
+# Ignore test files
+app/tests/
+
+# Ignore local environment files
+.vscode/
+.idea/
+*.swp
+
+# Ignore Docker-related files
+Dockerfile
+docker-compose.yml
