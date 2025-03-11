@@ -67,8 +67,10 @@ class PatientService:
                 PatientRiskFactor.factor_name.in_(query.risk_factors)
             )
         if query.diagnoses:
-            patients_query = patients_query.join(Diagnosis).join(ICDCode).filter(
-                ICDCode.code.in_(query.diagnoses)
+            patients_query = (
+                patients_query.join(Diagnosis)
+                .join(ICDCode)
+                .filter(ICDCode.code.in_(query.diagnoses))
             )
 
         return [
@@ -76,7 +78,9 @@ class PatientService:
                 "patient_id": patient.patient_id,
                 "first_name": patient.first_name,
                 "last_name": patient.last_name,
-                "email": patient.contact_info[0].email if patient.contact_info else None,
+                "email": (
+                    patient.contact_info[0].email if patient.contact_info else None
+                ),
                 "created_at": patient.created_at,
                 "updated_at": patient.updated_at,
             }

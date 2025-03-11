@@ -38,7 +38,7 @@ class Patient(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    @field_validator('patient_id', mode='before')
+    @field_validator("patient_id", mode="before")
     def validate_patient_id(cls, v):
         return str(v)
 
