@@ -1,5 +1,5 @@
 # app/schemas/patient.py
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from datetime import date, datetime
 
@@ -32,8 +32,15 @@ class PatientUpdate(PatientBase):
 
 class Patient(BaseModel):
     patient_id: str
+    first_name: str
+    last_name: str
+    email: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+
+    @field_validator('patient_id', mode='before')
+    def validate_patient_id(cls, v):
+        return str(v)
 
     class Config:
         from_attributes = True

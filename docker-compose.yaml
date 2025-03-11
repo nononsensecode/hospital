@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgis/postgis:14-3.1
+    container_name: hospital_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: hospital
+    volumes:
+      - ./hospital_schema.sql:/docker-entrypoint-initdb.d/hospital_schema.sql
+      - hospital_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d hospital"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    networks:
+      - hospital_network
+
+  web:
+    build:
+      context: hospital
+      dockerfile: Dockerfile
+    container_name: hospital_web
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=hospital
+      - DB_USER=user
+      - DB_PASSWORD=password
+    ports:
+      - "8000:8000"
+    networks:
+      - hospital_network
+
+volumes:
+  hospital_db_data:
+    driver: local
+
+networks:
+  hospital_network:
+    driver: bridge

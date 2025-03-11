@@ -1,5 +1,5 @@
 # app/services/patient_service.py
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from app.models.patient import Patient, PatientRiskFactor, Diagnosis, ICDCode
 from app.schemas.patient import PatientCreate, PatientUpdate, PatientQuery
@@ -42,7 +42,7 @@ class PatientService:
 
     @staticmethod
     def search_patients(db: Session, query: PatientQuery):
-        patients_query = db.query(Patient)
+        patients_query = db.query(Patient).options(joinedload(Patient.contact_info))
 
         if query.age_min is not None:
             patients_query = patients_query.filter(
@@ -67,10 +67,18 @@ class PatientService:
                 PatientRiskFactor.factor_name.in_(query.risk_factors)
             )
         if query.diagnoses:
-            patients_query = (
-                patients_query.join(Diagnosis)
-                .join(ICDCode)
-                .filter(ICDCode.code.in_(query.diagnoses))
+            patients_query = patients_query.join(Diagnosis).join(ICDCode).filter(
+                ICDCode.code.in_(query.diagnoses)
             )
 
-        return patients_query.all()
+        return [
+            {
+                "patient_id": patient.patient_id,
+                "first_name": patient.first_name,
+                "last_name": patient.last_name,
+                "email": patient.contact_info[0].email if patient.contact_info else None,
+                "created_at": patient.created_at,
+                "updated_at": patient.updated_at,
+            }
+            for patient in patients_query.all()
+        ]

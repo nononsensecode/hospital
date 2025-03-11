@@ -1,5 +1,5 @@
--- Hospital Database Schema for PostgreSQL 14
--- This schema is designed to support hospital operations and epidemiological queries
+-- Enable PostGIS extension for geometry type
+CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -743,14 +743,14 @@ INSERT INTO patient_risk_factors (patient_id, factor_name, factor_value, factor_
 SELECT patient_id, 
     'Smoking', 'Yes', 'BEHAVIORAL', 'HIGH', '2010-01-01', TRUE
 FROM patients
-WHERE patient_id % 2 = 0;
+WHERE CAST('x' || substring(md5(patient_id::text), 1, 8) AS bit(32))::bigint % 2 = 0;
 
 -- Insert sample social determinants of health
 INSERT INTO social_determinants (patient_id, category, description, impact_level, identified_date, is_active)
 SELECT patient_id, 
     'ECONOMIC_STABILITY', 'Low income', 'HIGH', '2020-01-01', TRUE
 FROM patients
-WHERE patient_id % 3 = 0;
+WHERE CAST('x' || substring(md5(patient_id::text), 1, 8) AS bit(32))::bigint % 3 = 0;
 
 -- Insert sample medications
 INSERT INTO medications (ndc_code, brand_name, generic_name, drug_class, form, strength, unit)
@@ -778,7 +778,7 @@ INSERT INTO patient_allergies (patient_id, allergen_type, allergen, reaction, se
 SELECT patient_id, 
     'MEDICATION', 'Penicillin', 'Rash', 'MODERATE', '2015-01-01'
 FROM patients
-WHERE patient_id % 4 = 0;
+WHERE CAST('x' || substring(md5(patient_id::text), 1, 8) AS bit(32))::bigint % 4 = 0;
 
 -- Insert sample lab tests
 INSERT INTO lab_tests (test_code, test_name, loinc_code, test_category, description, sample_type)
@@ -844,7 +844,7 @@ INSERT INTO family_medical_history (patient_id, relation_type, condition, age_at
 SELECT patient_id, 
     'MOTHER', 'Diabetes', 50, TRUE, 70
 FROM patients
-WHERE patient_id % 5 = 0;
+WHERE CAST('x' || substring(md5(patient_id::text), 1, 8) AS bit(32))::bigint % 5 = 0;
 
 -- Insert sample patient cohorts
 INSERT INTO patient_cohorts (cohort_name, description, created_by)
@@ -856,11 +856,11 @@ VALUES
 INSERT INTO cohort_members (cohort_id, patient_id, added_by)
 SELECT cohort_id, patient_id, (SELECT provider_id FROM healthcare_providers ORDER BY RANDOM() LIMIT 1)
 FROM patient_cohorts, patients
-WHERE cohort_name = 'Diabetes Study' AND patient_id % 2 = 0
+WHERE cohort_name = 'Diabetes Study' AND CAST('x' || substring(md5(patient_id::text), 1, 8) AS bit(32))::bigint % 2 = 0
 UNION ALL
 SELECT cohort_id, patient_id, (SELECT provider_id FROM healthcare_providers ORDER BY RANDOM() LIMIT 1)
 FROM patient_cohorts, patients
-WHERE cohort_name = 'Hypertension Study' AND patient_id % 3 = 0;
+WHERE cohort_name = 'Hypertension Study' AND CAST('x' || substring(md5(patient_id::text), 1, 8) AS bit(32))::bigint % 3 = 0;
 
 -- Insert sample geographic regions
 INSERT INTO geographic_regions (region_name, region_type, population)
